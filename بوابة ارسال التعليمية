@@ -239,3 +239,458 @@ app.listen(PORT, () => {
 });
 npm install
 npm run dev
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>بوابة إرسال التعليمية — تسجيل / دخول</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <!-- شعار بسيط: طائر وبريد -->
+      <div class="logo">
+        <svg width="44" height="44" viewBox="0 0 24 24" aria-hidden>
+          <path d="M2 12l10 6 10-6-10-6z" fill="currentColor" />
+        </svg>
+      </div>
+      <div class="title">
+        <h1>بوابة إرسال التعليمية</h1>
+        <p class="tag">بريد — طائر — تواصل و تعليم</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card auth-card">
+      <nav class="tabs">
+        <button id="tab-login" class="tab active">تسجيل الدخول</button>
+        <button id="tab-register-student" class="tab">تسجيل طالب</button>
+        <button id="tab-register-teacher" class="tab">تسجيل معلّم</button>
+      </nav>
+
+      <div class="tab-content">
+        <!-- LOGIN -->
+        <form id="form-login" class="form active">
+          <h2>تسجيل الدخول</h2>
+          <label>اسم المستخدم
+            <input type="text" id="login-username" required />
+          </label>
+          <label>كلمة المرور
+            <input type="password" id="login-password" required />
+          </label>
+          <div class="actions">
+            <button type="submit" class="btn primary">دخول</button>
+          </div>
+          <div id="login-msg" class="msg"></div>
+        </form>
+
+        <!-- REGISTER STUDENT -->
+        <form id="form-register-student" class="form">
+          <h2>تسجيل حساب طالب</h2>
+          <label>الاسم الكامل
+            <input type="text" id="stu-fullname" required />
+          </label>
+          <label>اسم المستخدم
+            <input type="text" id="stu-username" required />
+          </label>
+          <label>كلمة المرور (حروف + أرقام، لا تقل عن 6)
+            <input type="password" id="stu-password" required />
+          </label>
+          <label>الصف
+            <select id="stu-grade" required>
+              <option value="">اختر الصف</option>
+              <option value="6">الصف السادس</option>
+              <option value="7">الصف السابع</option>
+              <option value="8">الصف الثامن</option>
+              <option value="9">الصف التاسع</option>
+              <option value="10">الصف العاشر</option>
+            </select>
+          </label>
+          <div class="actions">
+            <button type="submit" class="btn primary">تسجيل طالب</button>
+          </div>
+          <div id="stu-msg" class="msg"></div>
+        </form>
+
+        <!-- REGISTER TEACHER -->
+        <form id="form-register-teacher" class="form">
+          <h2>تسجيل حساب معلّم</h2>
+          <p class="hint">ملاحظة: رمز إنشاء حساب المعلّم مُخفي ويجب إدخاله (مُخفي أثناء الكتابة).</p>
+          <label>الاسم الكامل
+            <input type="text" id="tch-fullname" required />
+          </label>
+          <label>اسم المستخدم
+            <input type="text" id="tch-username" required />
+          </label>
+          <label>كلمة المرور (≥6 أحرف)
+            <input type="password" id="tch-password" required />
+          </label>
+          <label>رمز إنشاء المعلّم (مخفي)
+            <input type="password" id="tch-code" placeholder="أدخل الرمز السري" required />
+          </label>
+          <div class="actions">
+            <button type="submit" class="btn primary">تسجيل معلّم</button>
+          </div>
+          <div id="tch-msg" class="msg"></div>
+        </form>
+      </div>
+    </section>
+
+    <section class="card info-card">
+      <h3>ملاحظات أُمنية</h3>
+      <ul>
+        <li>لا ترسل كلمة المرور أو رموز سرية عبر روابط عامة.</li>
+        <li>سيُخزن التوكن في المتصفح (localStorage) لاستخدامه في الطلبات التالية.</li>
+        <li>سأبني بعد ذلك لوحات منفصلة (طالب - معلّم) مع الحماية المطلوبة.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small>حقوق التصميم — بوابة إرسال التعليمية ©</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
+:root{
+  --bg:#0f1724;
+  --card:#0b1220;
+  --accent:#1fb6ff;
+  --muted:#94a3b8;
+  --glass: rgba(255,255,255,0.03);
+}
+
+*{box-sizing:border-box;font-family:Inter, "Noto Naskh Arabic", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+body{
+  margin:0;
+  background:linear-gradient(180deg, #071021 0%, #081229 60%);
+  color:#e6eef6;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* Topbar */
+.topbar{
+  width:100%;
+  padding:14px 20px;
+  display:flex;
+  justify-content:center;
+  border-bottom:1px solid rgba(255,255,255,0.03);
+}
+.brand{display:flex;gap:12px;align-items:center;}
+.logo{width:48px;height:48px;background:var(--glass);display:flex;align-items:center;justify-content:center;border-radius:10px;color:var(--accent);}
+.title h1{margin:0;font-size:18px;}
+.title .tag{margin:0;font-size:12px;color:var(--muted);}
+
+/* Layout */
+.container{
+  width:100%;
+  max-width:1100px;
+  padding:28px 20px;
+  display:grid;
+  grid-template-columns: 1fr 360px;
+  gap:22px;
+  align-items:start;
+}
+
+/* Cards */
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius:14px;
+  padding:18px;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.6);
+  border:1px solid rgba(255,255,255,0.03);
+}
+.auth-card{padding:6px;}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;padding:8px;}
+.tab{background:transparent;border:0;color:var(--muted);padding:10px 14px;border-radius:10px;cursor:pointer;}
+.tab.active{background:linear-gradient(90deg, rgba(31,182,255,0.12), rgba(31,182,255,0.06));color:var(--accent);box-shadow:inset 0 -2px 0 rgba(31,182,255,0.12);}
+
+/* Forms */
+.form{display:none;padding:12px;}
+.form.active{display:block;}
+.form h2{margin:8px 0 12px 0;color:#fff;}
+label{display:block;margin:10px 0;font-size:14px;color:var(--muted);}
+input[type="text"], input[type="password"], select{
+  width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);
+  background:transparent;color:inherit;
+  outline:none;
+}
+.actions{margin-top:12px;display:flex;gap:8px;align-items:center;}
+.btn{padding:10px 14px;border-radius:9px;border:0;cursor:pointer;}
+.btn.primary{background:linear-gradient(90deg,var(--accent),#0ea5e9);color:#042a3a;font-weight:700;}
+
+/* info card */
+.info-card h3{margin-top:0;}
+.info-card ul{padding-left:18px;color:var(--muted);}
+
+/* messages */
+.msg{margin-top:10px;font-size:14px;color:#ffcccb;}
+
+/* footer */
+.footer{margin:18px 0 40px;color:var(--muted);font-size:13px;text-align:center;width:100%;}
+@media (max-width:900px){
+  .container{grid-template-columns:1fr; padding:18px;}
+  .info-card{order:2;}
+}
+// app.js
+const apiBase = '';// إذا شغلت الخادم على نفس النطاق والـ port، ضع مثلاً: 'http://localhost:4000'
+
+/* تبويبات */
+const tabs = document.querySelectorAll('.tab');
+const forms = document.querySelectorAll('.form');
+tabs.forEach((t, idx) => {
+  t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.remove('active'));
+    forms.forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    forms[idx].classList.add('active');
+    clearMsgs();
+  });
+});
+
+function clearMsgs(){
+  document.querySelectorAll('.msg').forEach(m => m.textContent = '');
+}
+
+/* ----- تسجيل الدخول ----- */
+document.getElementById('form-login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  const msg = document.getElementById('login-msg');
+  msg.textContent = 'جاري المحاولة...';
+  try {
+    const res = await fetch(apiBase + '/api/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username: u, password: p })
+    });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.error || 'خطأ'; return; }
+    // حفظ التوكن وبيانات المستخدم
+    localStorage.setItem('es_token', data.token);
+    localStorage.setItem('es_role', data.role);
+    localStorage.setItem('es_user', JSON.stringify(data.user || {}));
+    msg.style.color = 'lightgreen';
+    msg.textContent = 'تم تسجيل الدخول! جارٍ التحويل إلى لوحة الحساب...';
+    // تحويل حسب الدور (سأبني اللوحات لاحقًا)
+    setTimeout(() => {
+      if (data.role === 'teacher') {
+        window.location.href = 'teacher.html';
+      } else {
+        window.location.href = 'student.html';
+      }
+    }, 800);
+  } catch (err) {
+    console.error(err);
+    msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+});
+
+/* ----- تسجيل طالب ----- */
+document.getElementById('form-register-student').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const full = document.getElementById('stu-fullname').value.trim();
+  const user = document.getElementById('stu-username').value.trim();
+  const pass = document.getElementById('stu-password').value;
+  const grade = document.getElementById('stu-grade').value;
+  const msg = document.getElementById('stu-msg');
+  msg.textContent = 'جاري التسجيل...';
+  try {
+    const res = await fetch(apiBase + '/api/register/student', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ full_name: full, username: user, password: pass, grade })
+    });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.error || 'خطأ'; return; }
+    msg.style.color='lightgreen';
+    msg.textContent = 'تم إنشاء حساب الطالب بنجاح — الآن يمكنك تسجيل الدخول.';
+    // مسح الحقول
+    e.target.reset();
+  } catch (err) {
+    console.error(err);
+    msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+});
+
+/* ----- تسجيل معلم ----- */
+document.getElementById('form-register-teacher').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const full = document.getElementById('tch-fullname').value.trim();
+  const user = document.getElementById('tch-username').value.trim();
+  const pass = document.getElementById('tch-password').value;
+  const code = document.getElementById('tch-code').value; // حقاً مخفي أثناء الإدخال (type=password)
+  const msg = document.getElementById('tch-msg');
+  msg.textContent = 'جاري التسجيل...';
+  try {
+    const res = await fetch(apiBase + '/api/register/teacher', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ full_name: full, username: user, password: pass, creation_code: code })
+    });
+    const data = await res.json();
+    if (!res.ok) { msg.textContent = data.error || 'خطأ'; return; }
+    msg.style.color='lightgreen';
+    msg.textContent = 'تم إنشاء حساب المعلّم بنجاح — الآن يمكنك تسجيل الدخول.';
+    e.target.reset();
+  } catch (err) {
+    console.error(err);
+    msg.textContent = 'تعذر الاتصال بالخادم';
+  }
+});
+
+/* --- مفيد للتطوير: دالة للحصول على التوكن وإضافة Authorization header --- */
+async function apiFetch(path, opts = {}) {
+  const token = localStorage.getItem('es_token');
+  opts.headers = opts.headers || {};
+  opts.headers['Content-Type'] = opts.headers['Content-Type'] || 'application/json';
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(apiBase + path, opts);
+  if (res.status === 401) {
+    // توكن منتهي أو غير صحيح — نطهر رسالة ونخرج
+    alert('الجلسة انتهت. ستنتقل لصفحة تسجيل الدخول.');
+    localStorage.clear();
+    window.location.href = '/';
+    throw new Error('Unauthorized');
+  }
+  return res;
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابة إرسال التعليمية</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(135deg, #4e54c8, #8f94fb);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+    .login-box {
+      background-color: rgba(0, 0, 0, 0.4);
+      padding: 30px;
+      border-radius: 15px;
+      width: 350px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input[type="password"] {
+      letter-spacing: 2px;
+    }
+    button {
+      background-color: #00c6ff;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #0072ff;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <h2>🔷 بوابة إرسال التعليمية</h2>
+    <p>تسجيل الدخول</p>
+
+    <select id="role" onchange="toggleRoleFields()">
+      <option value="">اختر النوع</option>
+      <option value="teacher">معلم</option>
+      <option value="student">طالب</option>
+    </select>
+
+    <div id="teacherFields" class="hidden">
+      <input type="text" id="teacherName" placeholder="الاسم الكامل للمعلم">
+      <input type="password" id="teacherPassword" placeholder="كلمة المرور">
+      <button onclick="loginTeacher()">تسجيل دخول المعلم</button>
+    </div>
+
+    <div id="studentFields" class="hidden">
+      <input type="text" id="studentName" placeholder="اسم الطالب">
+      <input type="password" id="studentPassword" placeholder="كلمة المرور (6 أحرف على الأقل)">
+      <button onclick="loginStudent()">تسجيل دخول الطالب</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleRoleFields() {
+      const role = document.getElementById('role').value;
+      document.getElementById('teacherFields').classList.add('hidden');
+      document.getElementById('studentFields').classList.add('hidden');
+
+      if (role === 'teacher') {
+        document.getElementById('teacherFields').classList.remove('hidden');
+      } else if (role === 'student') {
+        document.getElementById('studentFields').classList.remove('hidden');
+      }
+    }
+
+    function loginTeacher() {
+      const name = document.getElementById('teacherName').value.trim();
+      const pass = document.getElementById('teacherPassword').value;
+
+      if (name === "" || pass === "") {
+        alert("يرجى تعبئة جميع الحقول.");
+        return;
+      }
+
+      if (pass === "159159") {
+        localStorage.setItem("teacherName", name);
+        window.location.href = "teacher_dashboard.html";
+      } else {
+        alert("كلمة المرور غير صحيحة.");
+      }
+    }
+
+    function loginStudent() {
+      const name = document.getElementById('studentName').value.trim();
+      const pass = document.getElementById('studentPassword').value;
+
+      if (name === "" || pass === "") {
+        alert("يرجى تعبئة جميع الحقول.");
+        return;
+      }
+
+      if (pass.length < 6 || !/\d/.test(pass) || !/[A-Za-z]/.test(pass)) {
+        alert("كلمة المرور يجب أن تحتوي على أحرف وأرقام ولا تقل عن 6 أحرف.");
+        return;
+      }
+
+      localStorage.setItem("studentName", name);
+      window.location.href = "student_dashboard.html";
+    }
+  </script>
+
+</body>
+</html>
