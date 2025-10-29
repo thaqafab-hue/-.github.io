@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المجموعات والدردشة - بوابة إرسال التعليمية</title>
+  <style>
+    body {
+      font-family: "Cairo", sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .group-list, .chat-box {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      width: 350px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .group {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .group:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .chat-messages {
+      height: 300px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: left;
+    }
+    .chat-input {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+    }
+    .chat-input button {
+      margin-left: 10px;
+      background-color: #00c851;
+      color: white;
