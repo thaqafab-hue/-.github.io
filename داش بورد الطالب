@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>حساب الطالب - بوابة إرسال التعليمية</title>
+  <style>
+    body {
+      font-family: "Cairo", sans-serif;
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-top: 10px;
+      font-size: 28px;
+    }
+    .student-info {
+      background: rgba(255,255,255,0.2);
+      padding: 15px;
+      border-radius: 12px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 95%;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background: white;
+      color: black;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+    }
+    th {
+      background-color: #1e90ff;
+      color: white;
+    }
+    .logout {
+      background-color: #f44336;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .logout:hover {
+      background-color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎓 بوابة إرسال التعليمية</h1>
+  <div class="student-info">
+    <h3>اسم الطالب: <span id="studentName">---</span></h3>
+    <h4>الصف: <span id="studentClass">---</span></h4>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>المادة</th>
+        <th>امتحان يومي (1)</th>
+        <th>نصف الفصل</th>
+        <th>امتحان يومي (2)</th>
+        <th>نهاية الفصل</th>
+        <th>تقويم نوعي</th>
+        <th>المجموع</th>
+      </tr>
+    </thead>
+    <tbody id="marksTable">
+      <!-- يتم تعبئة البيانات هنا -->
+    </tbody>
+  </table>
+
+  <button class="logout" onclick="logout()">تسجيل الخروج</button>
+
+  <script>
+    // بيانات تجريبية فقط
+    const studentData = {
+      name: "محمد أحمد",
+      class: "الصف التاسع",
+      marks: [
+        { subject: "الرياضيات", d1: 8, mid: 15, d2: 9, final: 35, eval: 18 },
+        { subject: "اللغة العربية", d1: 9, mid: 16, d2: 10, final: 37, eval: 19 },
+        { subject: "اللغة الإنجليزية", d1: 7, mid: 14, d2: 9, final: 33, eval: 18 },
+        { subject: "علوم", d1: 9, mid: 18, d2: 10, final: 39, eval: 20 }
+      ]
+    };
+
+    // عرض بيانات الطالب
+    document.getElementById("studentName").textContent = studentData.name;
+    document.getElementById("studentClass").textContent = studentData.class;
+
+    const tableBody = document.getElementById("marksTable");
+
+    studentData.marks.forEach(m => {
+      const total = m.d1 + m.mid + m.d2 + m.final + m.eval;
+      const row = `
+        <tr>
+          <td>${m.subject}</td>
+          <td>${m.d1}</td>
+          <td>${m.mid}</td>
+          <td>${m.d2}</td>
+          <td>${m.final}</td>
+          <td>${m.eval}</td>
+          <td><strong>${total}</strong></td>
+        </tr>
+      `;
+      tableBody.innerHTML += row;
+    });
+
+    function logout() {
+      alert("تم تسجيل الخروج بنجاح.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+</body>
+</html>
