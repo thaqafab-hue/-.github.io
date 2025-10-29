@@ -1,0 +1,241 @@
+eschool-portal/
+├─ server.js
+├─ db.js
+├─ init_db.sql
+├─ package.json
+├─ .env
+└─ /frontend/   (سنضيفها لاحقًا خطوة بخطوة)
+{
+  "name": "eschool-portal",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^8.0.0",
+    "bcrypt": "^5.1.0",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
+JWT_SECRET=ستغير_هذا_الى_سر_طويل_عشوائي
+TEACHER_CREATION_CODE=159159
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  role TEXT NOT NULL, -- 'student' or 'teacher' or 'admin'
+  full_name TEXT,
+  username TEXT UNIQUE, -- للمستخدمين (طلاب) أو للمعلّمين كمعرّف دخول
+  password_hash TEXT NOT NULL,
+  grade INTEGER, -- للطالب: 6..10 ؛ للمعلّم يمكن تركها NULL
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS teacher_subjects (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  teacher_id TEXT NOT NULL,
+  grade INTEGER NOT NULL, -- 6..10
+  subject TEXT NOT NULL,
+  FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS marks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  student_id TEXT NOT NULL,
+  teacher_id TEXT NOT NULL,
+  grade INTEGER NOT NULL,
+  subject TEXT NOT NULL,
+  semester INTEGER NOT NULL, -- 1 or 2
+  daily1 REAL DEFAULT 0,      -- /10
+  midterm REAL DEFAULT 0,     -- /20
+  daily2 REAL DEFAULT 0,      -- /10
+  final REAL DEFAULT 0,       -- /40
+  qualitative REAL DEFAULT 0, -- /20
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(student_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(teacher_id) REFERENCES users(id) ON DELETE SET NULL
+);
+// server.js
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
+const db = require('./db');
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret';
+const TEACHER_CREATION_CODE = process.env.TEACHER_CREATION_CODE || '159159';
+const SALT_ROUNDS = 10;
+
+/* ---------- Helpers ---------- */
+
+function generateToken(user) {
+  const payload = { id: user.id, role: user.role };
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+}
+
+function authMiddleware(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ error: 'Unauthorized' });
+  const parts = auth.split(' ');
+  if (parts.length !== 2) return res.status(401).json({ error: 'Unauthorized' });
+  const token = parts[1];
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    req.user = payload;
+    next();
+  } catch (e) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+/* ---------- Routes ---------- */
+
+/** Register student */
+app.post('/api/register/student', async (req, res) => {
+  try {
+    const { username, password, full_name, grade } = req.body;
+    if (!username || !password || !full_name || !grade) {
+      return res.status(400).json({ error: 'جميع الحقول مطلوبة' });
+    }
+    // password validation: letters + numbers and length >= 6
+    const alnum = /[A-Za-z0-9]/;
+    if (password.length < 6 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+      return res.status(400).json({ error: 'كلمة المرور يجب أن تحتوي حروفًا وأرقامًا ولا تقل عن 6 أحرف' });
+    }
+    const id = uuidv4();
+    const passHash = await bcrypt.hash(password, SALT_ROUNDS);
+    const stmt = db.prepare('INSERT INTO users (id, role, full_name, username, password_hash, grade) VALUES (?, ?, ?, ?, ?, ?)');
+    stmt.run(id, 'student', full_name, username, passHash, grade);
+    const token = generateToken({ id, role: 'student' });
+    res.json({ message: 'تم إنشاء حساب الطالب بنجاح', token });
+  } catch (err) {
+    if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return res.status(400).json({ error: 'اسم المستخدم مستخدم بالفعل' });
+    }
+    console.error(err);
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
+});
+
+/** Create teacher (requires hidden creation code) */
+app.post('/api/register/teacher', async (req, res) => {
+  try {
+    const { username, password, full_name, creation_code } = req.body;
+    if (!username || !password || !full_name || !creation_code) {
+      return res.status(400).json({ error: 'جميع الحقول مطلوبة' });
+    }
+    if (creation_code !== TEACHER_CREATION_CODE) {
+      return res.status(403).json({ error: 'رمز إنشاء المعلم غير صحيح' });
+    }
+    // teacher password can be any (we'll allow secure passwords)
+    if (password.length < 6) return res.status(400).json({ error: 'كلمة المرور يجب أن تكون على الأقل 6 أحرف' });
+
+    const id = uuidv4();
+    const passHash = await bcrypt.hash(password, SALT_ROUNDS);
+    const stmt = db.prepare('INSERT INTO users (id, role, full_name, username, password_hash) VALUES (?, ?, ?, ?, ?)');
+    stmt.run(id, 'teacher', full_name, username, passHash);
+    const token = generateToken({ id, role: 'teacher' });
+    res.json({ message: 'تم إنشاء حساب المعلم بنجاح', token });
+  } catch (err) {
+    if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return res.status(400).json({ error: 'اسم المستخدم مستخدم بالفعل' });
+    }
+    console.error(err);
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
+});
+
+/** Login (student or teacher) */
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const row = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+    if (!row) return res.status(400).json({ error: 'تفاصيل الدخول غير صحيحة' });
+
+    const match = await bcrypt.compare(password, row.password_hash);
+    if (!match) return res.status(400).json({ error: 'تفاصيل الدخول غير صحيحة' });
+
+    const token = generateToken({ id: row.id, role: row.role });
+    res.json({ message: 'تم تسجيل الدخول', token, role: row.role, user: { id: row.id, full_name: row.full_name, grade: row.grade } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
+});
+
+/* ---------- Example protected route: add subject for teacher ---------- */
+app.post('/api/teacher/subjects', authMiddleware, (req, res) => {
+  if (req.user.role !== 'teacher') return res.status(403).json({ error: 'ممنوع' });
+  try {
+    const { grade, subject } = req.body;
+    if (!grade || !subject) return res.status(400).json({ error: 'grade و subject مطلوبان' });
+    const stmt = db.prepare('INSERT INTO teacher_subjects (teacher_id, grade, subject) VALUES (?, ?, ?)');
+    stmt.run(req.user.id, grade, subject);
+    res.json({ message: 'تم إضافة المادة للمعلم' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
+});
+
+/* ---------- Example protected route: add mark (teacher only, only for their grade+subject) ---------- */
+app.post('/api/teacher/marks', authMiddleware, (req, res) => {
+  if (req.user.role !== 'teacher') return res.status(403).json({ error: 'ممنوع' });
+  try {
+    const { student_id, grade, subject, semester, daily1, midterm, daily2, final, qualitative } = req.body;
+    // verify teacher actually teaches this grade+subject
+    const t = db.prepare('SELECT * FROM teacher_subjects WHERE teacher_id = ? AND grade = ? AND subject = ?').get(req.user.id, grade, subject);
+    if (!t) return res.status(403).json({ error: 'أنت لست مسؤولًا عن هذه المادة/الصف' });
+
+    // verify student exists and is in that grade
+    const student = db.prepare('SELECT * FROM users WHERE id = ? AND role = ?').get(student_id, 'student');
+    if (!student) return res.status(400).json({ error: 'الطالب غير موجود' });
+    if (student.grade != grade) return res.status(400).json({ error: 'الطالب ليس في هذا الصف' });
+
+    const stmt = db.prepare(`
+      INSERT INTO marks (student_id, teacher_id, grade, subject, semester, daily1, midterm, daily2, final, qualitative)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    stmt.run(student_id, req.user.id, grade, subject, semester, daily1||0, midterm||0, daily2||0, final||0, qualitative||0);
+    res.json({ message: 'تم إضافة العلامة' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
+});
+
+/* ---------- Student view: get own marks (only student or parent with token) ---------- */
+app.get('/api/student/marks', authMiddleware, (req, res) => {
+  if (req.user.role !== 'student') return res.status(403).json({ error: 'ممنوع' });
+  try {
+    const rows = db.prepare('SELECT * FROM marks WHERE student_id = ?').all(req.user.id);
+    res.json({ marks: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
+});
+
+/* ---------- Start ---------- */
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+npm install
+npm run dev
