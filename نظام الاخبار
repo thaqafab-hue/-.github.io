@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام الأخبار - بوابة إرسال التعليمية</title>
+  <style>
+    body {
+      font-family: "Cairo", sans-serif;
+      background: linear-gradient(135deg, #f7971e, #ffd200);
+      color: #333;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .post-box {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 20px;
+      width: 90%;
+      max-width: 600px;
+      margin: 0 auto 30px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    textarea {
+      height: 100px;
+    }
+    button {
+      background-color: #ff9800;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #e68900;
+    }
+    .news-list {
+      width: 90%;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .news-item {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      text-align: right;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .news-item h3 {
+      color: #ff9800;
+      margin: 0 0 8px;
+    }
+    .news-item small {
+      color: gray;
+    }
+    .back {
+      background-color: #2196f3;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📰 نظام الأخبار - بوابة إرسال التعليمية</h1>
+
+  <div class="post-box">
+    <h2>إنشاء منشور جديد</h2>
+    <input type="text" id="teacherName" placeholder="اسم المعلم">
+    <select id="targetClass">
+      <option value="">اختر الصف المستهدف</option>
+      <option>الصف السادس</option>
+      <option>الصف السابع</option>
+      <option>الصف الثامن</option>
+      <option>الصف التاسع</option>
+      <option>الصف العاشر</option>
+    </select>
+    <textarea id="postContent" placeholder="اكتب الخبر أو الإعلان هنا..."></textarea>
+    <button onclick="addPost()">نشر المنشور</button>
+  </div>
+
+  <div class="news-list" id="newsList">
+    <h2>📢 المنشورات</h2>
+  </div>
+
+  <button class="back" onclick="history.back()">رجوع</button>
+
+  <script>
+    const newsList = document.getElementById("newsList");
+    const posts = [];
+
+    function addPost() {
+      const teacher = document.getElementById("teacherName").value.trim();
+      const targetClass = document.getElementById("targetClass").value;
+      const content = document.getElementById("postContent").value.trim();
+
+      if (!teacher || !targetClass || !content) {
+        alert("⚠️ الرجاء ملء جميع الحقول قبل النشر.");
+        return;
+      }
+
+      const newPost = {
+        teacher,
+        targetClass,
+        content,
+        date: new Date().toLocaleString()
+      };
+
+      posts.unshift(newPost);
+      renderPosts();
+      document.getElementById("postContent").value = "";
+      alert("✅ تم نشر المنشور بنجاح!");
+    }
+
+    function renderPosts() {
+      newsList.innerHTML = "<h2>📢 المنشورات</h2>";
+      posts.forEach(post => {
+        const div = document.createElement("div");
+        div.className = "news-item";
+        div.innerHTML = `
+          <h3>${post.teacher} - ${post.targetClass}</h3>
+          <p>${post.content}</p>
+          <small>📅 ${post.date}</small>
+        `;
+        newsList.appendChild(div);
+      });
+    }
+  </script>
+
+</body>
+</html>
