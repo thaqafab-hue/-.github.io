@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابة إرسال التعليمية</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(135deg, #4e54c8, #8f94fb);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+    .login-box {
+      background-color: rgba(0, 0, 0, 0.4);
+      padding: 30px;
+      border-radius: 15px;
+      width: 350px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input[type="password"] {
+      letter-spacing: 2px;
+    }
+    button {
+      background-color: #00c6ff;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #0072ff;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <h2>🔷 بوابة إرسال التعليمية</h2>
+    <p>تسجيل الدخول</p>
+
+    <select id="role" onchange="toggleRoleFields()">
+      <option value="">اختر النوع</option>
+      <option value="teacher">معلم</option>
+      <option value="student">طالب</option>
+    </select>
+
+    <div id="teacherFields" class="hidden">
+      <input type="text" id="teacherName" placeholder="الاسم الكامل للمعلم">
+      <input type="password" id="teacherPassword" placeholder="كلمة المرور">
+      <button onclick="loginTeacher()">تسجيل دخول المعلم</button>
+    </div>
+
+    <div id="studentFields" class="hidden">
+      <input type="text" id="studentName" placeholder="اسم الطالب">
+      <input type="password" id="studentPassword" placeholder="كلمة المرور (6 أحرف على الأقل)">
+      <button onclick="loginStudent()">تسجيل دخول الطالب</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleRoleFields() {
+      const role = document.getElementById('role').value;
+      document.getElementById('teacherFields').classList.add('hidden');
+      document.getElementById('studentFields').classList.add('hidden');
+
+      if (role === 'teacher') {
+        document.getElementById('teacherFields').classList.remove('hidden');
+      } else if (role === 'student') {
+        document.getElementById('studentFields').classList.remove('hidden');
+      }
+    }
+
+    function loginTeacher() {
+      const name = document.getElementById('teacherName').value.trim();
+      const pass = document.getElementById('teacherPassword').value;
+
+      if (name === "" || pass === "") {
+        alert("يرجى تعبئة جميع الحقول.");
+        return;
+      }
+
+      if (pass === "159159") {
+        localStorage.setItem("teacherName", name);
+        window.location.href = "teacher_dashboard.html";
+      } else {
+        alert("كلمة المرور غير صحيحة.");
+      }
+    }
+
+    function loginStudent() {
+      const name = document.getElementById('studentName').value.trim();
+      const pass = document.getElementById('studentPassword').value;
+
+      if (name === "" || pass === "") {
+        alert("يرجى تعبئة جميع الحقول.");
+        return;
+      }
+
+      if (pass.length < 6 || !/\d/.test(pass) || !/[A-Za-z]/.test(pass)) {
+        alert("كلمة المرور يجب أن تحتوي على أحرف وأرقام ولا تقل عن 6 أحرف.");
+        return;
+      }
+
+      localStorage.setItem("studentName", name);
+      window.location.href = "student_dashboard.html";
+    }
+  </script>
+
+</body>
+</html>
